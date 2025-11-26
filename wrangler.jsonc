@@ -1,0 +1,7 @@
+{
+  "name": "dynamik-dev-docs",
+  "compatibility_date": "2025-11-26",
+  "assets": {
+    "directory": "./dist"
+  }
+}
