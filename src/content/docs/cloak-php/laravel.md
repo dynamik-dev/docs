@@ -3,22 +3,25 @@ title: Laravel Integration
 description: Laravel adapter package with helper functions, facades, and persistent storage configuration.
 ---
 
-**Cloak for Laravel** (`dynamik-dev/cloak-laravel`) is a Laravel adapter package that wraps the core [Cloak PHP](/cloak-php) library with Laravel-specific features including helper functions, facades, service provider integration, and configurable encrypted storage.
+**Cloak for Laravel** (`dynamik-dev/cloak-laravel`) is a Laravel adapter that adds framework-specific features to the core [Cloak PHP](/cloak-php) library.
 
-:::tip[Core Package Documentation]
-This page covers the **Laravel adapter package**. For core functionality, custom detectors, and storage implementation details, see the [Cloak PHP documentation](/cloak-php).
+:::tip[Looking for Core Features?]
+This page covers **Laravel-specific features only**. For detectors, storage backends, and core concepts, see:
+- [Quick Start](/cloak-php/quick-start) - Core usage
+- [Detectors](/cloak-php/detectors) - Built-in and custom detectors
+- [Storage](/cloak-php/storage) - Storage backends and persistence
 :::
 
-## What's Included
+## Laravel Features
 
-The Laravel adapter adds:
+The adapter adds:
 
-- **Helper Functions** - Global `cloak()` and `uncloak()` functions
+- **Helper Functions** - Global `cloak()` and `uncloak()` helpers
 - **Facade** - `Cloak` facade for static access
-- **Service Provider** - Automatic registration and configuration
-- **Encrypted Storage** - Built-in encrypted array and cache storage
-- **Configuration** - Environment-based config with Laravel conventions
-- **Dependency Injection** - Automatically bound to the service container
+- **Service Provider** - Auto-registration and configuration
+- **Encrypted Storage** - Built-in encrypted cache storage
+- **Configuration** - Environment-based config file
+- **Dependency Injection** - Container binding
 
 ## Installation
 
@@ -28,15 +31,13 @@ Install via Composer:
 composer require dynamik-dev/cloak-laravel
 ```
 
-### Configuration
-
-Optionally publish the configuration file:
+Optionally publish the configuration file for customization:
 
 ```bash
 php artisan vendor:publish --tag="cloak-config"
 ```
 
-See the [Configuration](/cloak-php/configuration) page for all available options.
+See [Configuration](/cloak-php/configuration) for all options (storage modes, TTL, cache drivers, etc.).
 
 ## Usage Methods
 
@@ -140,22 +141,19 @@ $final = Cloak::uncloak($aiResponse);
 // "Sure! I'll email you at john@example.com"
 ```
 
-## Laravel Integration Scenarios
+## Laravel Use Cases
 
 ### Queue Jobs
 
-When dispatching jobs with sensitive data:
+Mask sensitive data before dispatching jobs:
 
 ```php
-use App\Jobs\ProcessUserData;
-
-// Mask before dispatching
+// Dispatch with masked data
 dispatch(new ProcessUserData(cloak($userData)));
 ```
 
-In the job:
-
 ```php
+// In the job
 public function handle()
 {
     $original = uncloak($this->maskedData);
@@ -164,25 +162,17 @@ public function handle()
 ```
 
 :::tip
-Enable `persist: true` to ensure data is available when the job runs.
+Enable `persist: true` in config for cross-request workflows. See [Configuration](/cloak-php/configuration).
 :::
 
-### Middleware Example
-
-Log requests with masked data:
+### Logging Middleware
 
 ```php
-namespace App\Http\Middleware;
-
-use Closure;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
-
 class LogRequestsWithMaskedData
 {
     public function handle(Request $request, Closure $next)
     {
-        Log::info('Incoming request', [
+        Log::info('Request', [
             'url' => $request->url(),
             'payload' => cloak(json_encode($request->all())),
         ]);
@@ -194,23 +184,22 @@ class LogRequestsWithMaskedData
 
 ### Multi-Step Forms
 
-For forms that span multiple requests:
-
 ```php
-// Step 1: Store masked data in session
-session(['user_data' => cloak($request->validated())]);
+// Step 1: Store in session
+session(['data' => cloak($request->validated())]);
 
-// Step 2: Later, retrieve and unmask
-$originalData = uncloak(session('user_data'));
+// Step 2: Retrieve later
+$original = uncloak(session('data'));
 ```
 
 ## Next Steps
 
-- **[Configuration](/cloak-php/configuration)** - Storage modes, TTL settings, and cache drivers
-- **[Quick Start Guide](/cloak-php/quick-start)** - Custom detectors and storage implementations
+- **[Configuration](/cloak-php/configuration)** - Configure storage, TTL, and cache drivers
+- **[Detectors](/cloak-php/detectors)** - Use built-in detectors or create custom ones
+- **[Storage](/cloak-php/storage)** - Understand persistence and storage backends
 - **[API Reference](/cloak-php/api-reference)** - Complete API documentation
 
 ## Resources
 
-- [GitHub Repository](https://github.com/dynamik-dev/cloak-laravel)
-- [Core Package](https://github.com/dynamik-dev/cloak-php)
+- [GitHub: cloak-laravel](https://github.com/dynamik-dev/cloak-laravel)
+- [GitHub: cloak-php](https://github.com/dynamik-dev/cloak-php)

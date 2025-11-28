@@ -3,24 +3,23 @@ title: Quick Start Guide
 description: Get started with Cloak PHP core package in minutes.
 ---
 
-This guide will help you get started with the **Cloak PHP core package**.
+This guide covers the **Cloak PHP core package** for use in any PHP project.
 
 :::tip[Using Laravel?]
-If you're using Laravel, check out the [Laravel Integration](/cloak-php/laravel) guide for the `cloak-laravel` adapter package with additional features like helper functions, facades, and configuration.
+If you're using Laravel, see the [Laravel Integration](/cloak-php/laravel) guide for the `cloak-laravel` adapter with helper functions, facades, and configuration.
 :::
 
 ## Installation
 
-Install the core package via Composer:
+Install via Composer:
 
 ```bash
 composer require dynamik-dev/cloak-php
 ```
 
-### Requirements
-
+**Requirements:**
 - PHP 8.2 or higher
-- mbstring extension
+- mbstring extension (required by libphonenumber)
 
 ## Basic Usage
 
@@ -33,25 +32,27 @@ $cloak = Cloak::make();
 // Mask sensitive data
 $text = "Email me at john@example.com or call 555-123-4567";
 $masked = $cloak->cloak($text);
-// Result: "Email me at {{EMAIL_x7k2m9_1}} or call {{PHONE_a3b5c7_1}}"
+// "Email me at {{EMAIL_x7k2m9_1}} or call {{PHONE_a3b5c7_1}}"
 
 // Restore original data
 $original = $cloak->uncloak($masked);
-// Result: "Email me at john@example.com or call 555-123-4567"
+// "Email me at john@example.com or call 555-123-4567"
 ```
 
 ## What Gets Detected?
 
 By default, Cloak automatically detects and masks:
 
-- ✅ Email addresses
-- ✅ Phone numbers (validated, not just patterns)
-- ✅ Social Security Numbers
-- ✅ Credit card numbers
+- **Email addresses** - `{{EMAIL_...}}`
+- **Phone numbers** - `{{PHONE_...}}` (validated using libphonenumber)
+- **Social Security Numbers** - `{{SSN_...}}`
+- **Credit card numbers** - `{{CREDIT_CARD_...}}`
 
-## Real-World Example: API Integration
+Learn more about detectors and creating custom ones in the [Detectors Guide](/cloak-php/detectors).
 
-Here's how to use Cloak when sending data to external APIs:
+## Example: API Integration
+
+Protect PII when sending data to external APIs:
 
 ```php
 use DynamikDev\Cloak\Cloak;
@@ -67,7 +68,7 @@ class ApiService
 
     public function sendToExternalApi(string $userData): string
     {
-        // 1. Mask PII before sending to external API
+        // 1. Mask PII before sending
         $maskedData = $this->cloak->cloak($userData);
 
         // 2. Send sanitized text to API
@@ -75,79 +76,24 @@ class ApiService
             'data' => $maskedData
         ]);
 
-        // 3. Get API response (may contain placeholders)
-        $maskedResponse = $response->body();
-
-        // 4. Restore original PII
-        return $this->cloak->uncloak($maskedResponse);
+        // 3. Restore original data from response
+        return $this->cloak->uncloak($response->body());
     }
 }
 ```
 
-### Example Flow
-
+**Flow:**
 ```php
-$service = new ApiService();
-
-// User input
 $input = "My email is john@example.com and phone is 555-123-4567";
-
-// Send to API
 $result = $service->sendToExternalApi($input);
+
+// Masked: "My email is {{EMAIL_x7k2m9_1}} and phone is {{PHONE_a3b5c7_1}}"
+// Sent to API → Response returned → Original data restored
 ```
 
-**What happens:**
+## Using Specific Detectors
 
-1. Input is masked: `"My email is {{EMAIL_x7k2m9_1}} and phone is {{PHONE_a3b5c7_1}}"`
-2. Masked text sent to external API
-3. API responds with placeholders preserved
-4. Response is unmasked to restore original data
-
-## Custom Storage
-
-By default, Cloak uses in-memory `ArrayStore`. For persistent storage, implement the `StoreInterface`:
-
-```php
-use DynamikDev\Cloak\Contracts\StoreInterface;
-
-class RedisStore implements StoreInterface
-{
-    public function __construct(private Redis $redis) {}
-
-    public function store(string $key, mixed $value): void
-    {
-        $this->redis->setex($key, 3600, serialize($value));
-    }
-
-    public function retrieve(string $key): mixed
-    {
-        $value = $this->redis->get($key);
-        return $value ? unserialize($value) : null;
-    }
-
-    public function has(string $key): bool
-    {
-        return $this->redis->exists($key) > 0;
-    }
-}
-```
-
-### Using Custom Storage
-
-```php
-use DynamikDev\Cloak\Cloak;
-
-$store = new RedisStore($redis);
-$cloak = Cloak::using($store);
-
-$masked = $cloak->cloak($text);
-```
-
-## Working with Detectors
-
-Cloak includes built-in detectors for emails, phones, SSN, and credit cards. You can also create custom detectors for your specific needs.
-
-### Using Specific Detectors
+Use only the detectors you need for better performance:
 
 ```php
 use DynamikDev\Cloak\Cloak;
@@ -156,128 +102,48 @@ use DynamikDev\Cloak\Detectors\Phone;
 
 $cloak = Cloak::make();
 
-// Only mask emails and phones (skip SSN and credit cards)
+// Only mask emails and phones
 $masked = $cloak->cloak($text, [
     new Email(),
     new Phone(),
 ]);
 ```
 
-**Learn More:**
-- [Detectors Guide](/cloak-php/detectors) - Complete guide to built-in and custom detectors
+Learn more in the [Detectors Guide](/cloak-php/detectors).
 
 ## Common Use Cases
 
-### 1. Logging Sensitive Data
-
+**Logging:**
 ```php
-use DynamikDev\Cloak\Cloak;
-
 $cloak = Cloak::make();
-
-// Log with masked sensitive information
 $maskedData = $cloak->cloak(json_encode($userData));
 error_log("User data: " . $maskedData);
 ```
 
-### 2. Third-Party API Integration
-
+**Data Export:**
 ```php
-// Mask before sending to external service
-$cloak = Cloak::make();
-$masked = $cloak->cloak($userData);
-
-$httpClient->post('https://api.example.com/data', [
-    'payload' => $masked
-]);
-```
-
-### 3. Data Export/Sanitization
-
-```php
-// Create sanitized exports for testing or sharing
 $cloak = Cloak::make();
 $sanitizedData = $cloak->cloak(json_encode($productionData));
-
-file_put_contents('exports/sanitized_users.json', $sanitizedData);
+file_put_contents('exports/sanitized.json', $sanitizedData);
 ```
 
-### 4. Multi-Step Processing
+## Storage & Persistence
 
-```php
-// Using persistent storage for multi-step workflows
-$store = new RedisStore($redis);
-$cloak = Cloak::using($store);
+By default, Cloak uses in-memory storage that clears after each request. For workflows that span multiple requests (queues, multi-step forms, etc.), you'll need persistent storage.
 
-// Step 1: Mask and store
-$masked = $cloak->cloak($sensitiveData);
-$queue->push(['data' => $masked]);
-
-// Step 2: Later, retrieve and unmask
-$job = $queue->pop();
-$original = $cloak->uncloak($job['data']);
-```
-
-## Best Practices
-
-### ✅ Do
-
-- **Use persistent storage** (Redis, database) for cross-request workflows
-- **Implement TTLs** in your custom storage for automatic cleanup
-- **Mask before logging** sensitive information
-- **Test thoroughly** with your specific data patterns
-- **Use selective detection** when you only need specific types
-
-### ❌ Don't
-
-- **Don't store masked data permanently** - placeholders are meant to be temporary
-- **Don't share Cloak instances** across different users or sessions
-- **Don't rely on in-memory storage** for async or multi-request workflows
-- **Don't skip implementing proper storage** for production use cases
-
-## Troubleshooting
-
-### Placeholders Not Being Replaced
-
-**Problem:** `uncloak()` returns placeholders instead of original values
-
-**Solutions:**
-
-1. Verify you're using the same `Cloak` instance for both `cloak()` and `uncloak()`
-2. If using custom storage, ensure data hasn't expired
-3. Check that your storage implementation is working correctly
-
-### Phone Numbers Not Detected
-
-**Problem:** Valid phone numbers are not being masked
-
-**Solutions:**
-
-1. Ensure phone numbers are in a valid format (uses libphonenumber validation)
-2. Try international format with country code (e.g., +1-555-123-4567)
-3. Verify the Phone detector is included in your detector array
-
-### Storage Not Persisting
-
-**Problem:** Data is lost between requests
-
-**Solution:** The default `ArrayStore` is in-memory only. Implement a custom store with persistent backend (Redis, database, etc.)
-
-### Performance Issues
-
-**Problem:** Masking is slow with large texts
-
-**Solutions:**
-
-1. Use selective detection with only the detectors you need
-2. Consider processing text in chunks
-3. Cache detector instances if processing multiple texts
+See the [Storage Guide](/cloak-php/storage) for:
+- Custom storage implementations (Redis, database, etc.)
+- Persistence strategies
+- TTL configuration
+- Best practices
 
 ## Next Steps
 
-- [API Reference](/cloak-php/api-reference) - Complete API documentation
-- [Laravel Integration](/cloak-php/laravel) - Laravel adapter with helper functions, facades, and config
+- **[Detectors](/cloak-php/detectors)** - Learn about built-in detectors and create custom ones
+- **[Storage](/cloak-php/storage)** - Implement persistent storage backends
+- **[Laravel Integration](/cloak-php/laravel)** - Use the Laravel adapter
+- **[API Reference](/cloak-php/api-reference)** - Complete API documentation
 
 ## Need Help?
 
-- [GitHub Issues](https://github.com/dynamik-dev/cloak-php/issues) - Report bugs or request features
+[GitHub Issues](https://github.com/dynamik-dev/cloak-php/issues) - Report bugs or request features

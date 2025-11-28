@@ -1,9 +1,9 @@
 ---
 title: API Reference
-description: Complete API reference for Cloak PHP core library.
+description: Complete API reference for Cloak PHP.
 ---
 
-This page documents the public API of the Cloak PHP library.
+Public API documentation for the Cloak PHP core library.
 
 ## Cloak Class
 
@@ -81,16 +81,14 @@ $original = $cloak->uncloak($masked);
 
 **Returns:** Original text with sensitive data restored
 
-## Built-in Detectors
+## Built-In Detectors
 
-Cloak includes four pre-built detectors:
+- `Email` - Type: `EMAIL`
+- `Phone` - Type: `PHONE`
+- `SSN` - Type: `SSN`
+- `CreditCard` - Type: `CREDIT_CARD`
 
-- **Email** - Type: `EMAIL`
-- **Phone** - Type: `PHONE` (uses libphonenumber for validation)
-- **SSN** - Type: `SSN`
-- **Credit Card** - Type: `CREDIT_CARD`
-
-For detailed information about each detector, pattern examples, and creating custom detectors, see the [Detectors Guide](/cloak-php/detectors).
+See [Detectors](/cloak-php/detectors) for detailed documentation and custom detector creation.
 
 ## Interfaces
 
@@ -128,57 +126,13 @@ interface StoreInterface
 - `retrieve(string $key): mixed` - Retrieves a value by key
 - `has(string $key): bool` - Checks if a key exists
 
-## Custom Detectors
-
-See the [Detectors Guide](/cloak-php/detectors) for complete documentation on creating custom detectors with examples.
-
 ## Storage Backends
 
-### ArrayStore (Default)
+**Default:** `ArrayStore` - In-memory storage for single-request workflows
 
-In-memory storage suitable for single-request scenarios.
+**Custom:** Implement `StoreInterface` for persistent storage (Redis, database, etc.)
 
-```php
-use DynamikDev\Cloak\Stores\ArrayStore;
-
-$cloak = Cloak::make(new ArrayStore());
-```
-
-**Use Cases:**
-- Testing
-- Single-request workflows
-- Non-persistent masking
-
-### Custom Storage
-
-Implement `StoreInterface` for persistent storage:
-
-```php
-use DynamikDev\Cloak\Contracts\StoreInterface;
-
-class RedisStore implements StoreInterface
-{
-    public function __construct(private Redis $redis)
-    {
-    }
-
-    public function store(string $key, mixed $value): void
-    {
-        $this->redis->set($key, serialize($value), 3600);
-    }
-
-    public function retrieve(string $key): mixed
-    {
-        $value = $this->redis->get($key);
-        return $value ? unserialize($value) : null;
-    }
-
-    public function has(string $key): bool
-    {
-        return $this->redis->exists($key);
-    }
-}
-```
+See [Storage](/cloak-php/storage) for complete documentation and examples.
 
 ## Placeholder Reuse
 

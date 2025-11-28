@@ -1,12 +1,12 @@
 ---
-title: Laravel Configuration
-description: Configuration options for the Cloak Laravel adapter package.
+title: Configuration
+description: Laravel adapter configuration reference.
 ---
 
-This page covers the configuration options available in the **Cloak for Laravel** adapter package (`dynamikdev/cloak-laravel`).
+Configuration reference for the **Cloak for Laravel** adapter package.
 
-:::note
-This configuration is Laravel-specific. The core `cloak-php` package doesn't require configuration - see the [Quick Start Guide](/cloak-php/quick-start) for core package usage.
+:::note[Laravel Only]
+This page is for Laravel users only. The core `cloak-php` package doesn't use a config file - see [Storage](/cloak-php/storage) for programmatic configuration.
 :::
 
 ## Publishing Configuration
@@ -61,11 +61,13 @@ Controls the storage mechanism for placeholder-to-value mappings.
 CLOAK_PERSIST=true
 ```
 
-**Use Cases for Persist Mode:**
-- Queue jobs that need to restore masked data
-- Multi-step forms spanning multiple requests
-- API integrations with webhooks
-- Long-running processes
+**When to use persist mode:**
+- Queue jobs
+- Multi-step forms
+- Webhook callbacks
+- Any cross-request workflow
+
+See [Storage](/cloak-php/storage) for detailed persistence strategies.
 
 ### storage_driver
 
@@ -80,31 +82,7 @@ Specifies the storage implementation class that handles persisting the placehold
 
 **Custom Storage:**
 
-You can create a custom storage driver by implementing the Cloak PHP `StoreInterface`:
-
-```php
-use DynamikDev\Cloak\Contracts\StoreInterface;
-
-class CustomStorage implements StoreInterface
-{
-    public function store(string $key, mixed $value): void
-    {
-        // Your implementation
-    }
-
-    public function retrieve(string $key): mixed
-    {
-        // Your implementation
-    }
-
-    public function has(string $key): bool
-    {
-        // Your implementation
-    }
-}
-```
-
-Then update your config:
+Create a custom driver by implementing `StoreInterface` (see [Storage](/cloak-php/storage) for examples):
 
 ```php
 'storage_driver' => App\Services\CustomStorage::class,
@@ -164,6 +142,8 @@ CLOAK_DEFAULT_TTL=7200  // 2 hours
 - `86400` - 24 hours
 
 **Important:** Choose a TTL that accommodates your workflow. If data expires before you uncloak it, the original values cannot be recovered.
+
+See [Storage](/cloak-php/storage) for TTL strategies and recommendations.
 
 ## Environment Variables
 
