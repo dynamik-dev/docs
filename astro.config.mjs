@@ -37,6 +37,16 @@ export default defineConfig({
 						},
 					],
 				},
+				{
+					label: 'Listmonk PHP',
+					items: [
+						{ label: 'Overview', slug: 'listmonk-php' },
+						{ label: 'Quick Start', slug: 'listmonk-php/quick-start' },
+						{ label: 'Subscribers', slug: 'listmonk-php/subscribers' },
+						{ label: 'Campaigns', slug: 'listmonk-php/campaigns' },
+						{ label: 'API Reference', slug: 'listmonk-php/api-reference' },
+					],
+				},
 			],
 		}),
 	],
