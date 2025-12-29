@@ -5,6 +5,8 @@ description: A PHP SDK for the Listmonk email marketing platform - manage subscr
 
 **Listmonk PHP** is a PHP SDK that provides a clean, fluent interface for interacting with the [Listmonk](https://listmonk.app) email marketing platform. It enables you to manage subscribers, send campaigns, handle transactional emails, and more—all from your PHP application.
 
+- **GitHub**: [dynamik-dev/listmonk-php](https://github.com/dynamik-dev/listmonk-php)
+
 ## Features
 
 - **Subscriber Management** - Create, update, delete, and query subscribers with custom attributes
@@ -99,6 +101,27 @@ $campaign = $listmonk->campaigns()->create(
 
 $listmonk->campaigns()->start($campaign->id);
 ```
+
+## Contributing
+
+Contributions are welcome! Before submitting a pull request, ensure all checks pass:
+
+```bash
+# Code style check (linting)
+composer check-style
+
+# Static analysis
+composer analyse
+
+# Unit tests
+composer test
+
+# Feature tests (requires Docker)
+docker-compose -f docker-compose.test.yml up -d
+composer test
+```
+
+All four checks (lint, static, unit, and feature tests) must pass for your contribution to be accepted.
 
 ## License
 
