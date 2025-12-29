@@ -24,7 +24,8 @@ composer require dynamik-dev/listmonk-php
 ```
 
 :::note[Requirements]
-PHP 8.4 or higher is required.
+- PHP 8.4 or higher
+- Listmonk v5 or higher
 :::
 
 ## How It Works
@@ -36,7 +37,7 @@ use DynamikDev\Listmonk\Listmonk;
 
 $listmonk = new Listmonk(
     baseUrl: 'https://listmonk.example.com',
-    username: 'admin',
+    username: 'api',
     password: 'your-api-token',
 );
 
@@ -76,7 +77,7 @@ use DynamikDev\Listmonk\Listmonk;
 
 $listmonk = new Listmonk(
     baseUrl: 'https://listmonk.example.com',
-    username: 'admin',
+    username: 'api',
     password: 'your-api-token',
 );
 

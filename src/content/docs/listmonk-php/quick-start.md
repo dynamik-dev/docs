@@ -22,13 +22,13 @@ use DynamikDev\Listmonk\Listmonk;
 
 $listmonk = new Listmonk(
     baseUrl: 'https://listmonk.example.com',
-    username: 'admin',
+    username: 'api',
     password: 'your-api-token',
 );
 ```
 
 :::tip[Getting API Credentials]
-In Listmonk, go to **Settings > API** to find or generate your API credentials. The username is typically your admin username, and the password is your API token.
+In Listmonk, go to **Settings > API** to create an API user. The username is the API user's name (e.g., `api`) and the password is the generated API token.
 :::
 
 ## Basic Usage
