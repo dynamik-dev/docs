@@ -117,12 +117,15 @@ composer analyse
 # Unit tests
 composer test
 
-# Feature tests (requires Docker)
-docker-compose -f docker-compose.test.yml up -d
-composer test
+# Integration tests (requires Docker)
+docker compose -f docker-compose.test.yml up -d
+composer test:integration
+
+# Or run all tests at once
+composer test:all
 ```
 
-All four checks (lint, static, unit, and feature tests) must pass for your contribution to be accepted.
+All checks (lint, static analysis, and tests) must pass for your contribution to be accepted.
 
 ## License
 
